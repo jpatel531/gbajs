@@ -38,8 +38,15 @@ function GameBoyAdvanceKeypad() {
 
 	this.gamepads = [];
 
-	this.pusher = new Pusher('8e183254b9d31b4c870e');
-    this.channel = this.pusher.subscribe('controls');
+	this.pusher = new Pusher('8e183254b9d31b4c870e', {
+		authTransport: 'client',
+		clientAuth: {
+	      key: '8e183254b9d31b4c870e',
+	      secret: '805b715ffb3669d23805'
+    	}
+	});
+
+    this.channel = this.pusher.subscribe('private-controller');
 
 };
 
@@ -175,12 +182,16 @@ GameBoyAdvanceKeypad.prototype.registerHandlers = function() {
 	window.addEventListener("keydown", this.keyboardHandler.bind(this), true);
 	window.addEventListener("keyup", this.keyboardHandler.bind(this), true);
 
-	this.channel.bind('command', function(keyCode){
-		simulateKeyEvent('keydown', keyCode);
-		// simulateKeyEvent('keyup', keyCode)
-		setTimeout(function(){simulateKeyEvent('keyup', keyCode)}, 250)
-
+	this.channel.bind('client-keydown', function(event){
+		simulateKeyEvent('keydown', event.keyCode);
 	});
+
+	this.channel.bind('client-keyup', function(event){
+		console.log('keyup')
+		simulateKeyEvent('keyup', event.keyCode)
+	});
+
+
 
 	window.addEventListener("gamepadconnected", this.gamepadConnectHandler.bind(this), true);
 	window.addEventListener("mozgamepadconnected", this.gamepadConnectHandler.bind(this), true);
